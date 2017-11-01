@@ -5,9 +5,9 @@ import torch
 from torch import nn
 from torch.autograd import Variable
 
-class TripletLoss(nn.Module):
+class SDMLTripletLoss(nn.Module):
     def __init__(self, margin=0):
-        super(TripletLoss, self).__init__()
+        super(SDMLTripletLoss, self).__init__()
         self.margin = margin
         self.ranking_loss = nn.MarginRankingLoss(margin=margin)
         self.num_instances = 4
@@ -33,15 +33,15 @@ class TripletLoss(nn.Module):
         dist_mean = sum_dist_positive_all/num_positive_pairs
 	
 
-	    dist_ap, dist_an, loss_list = [], [], []
+        dist_ap, dist_an, loss_list = [], [], []
         for i in range(n):
-	        dist_ap.append(dist[i][mask[i]].max())
+            dist_ap.append(dist[i][mask[i]].max())
             dist_an.append(dist[i][mask[i] == 0].min())
-	        dist_i_sum = torch.sum(dist[i][mask[i]])
-	        mask_i = mask[i].cpu().data
-	        idx_of_j = torch.squeeze(torch.nonzero(mask_i)).numpy()
+            dist_i_sum = torch.sum(dist[i][mask[i]])
+            mask_i = mask[i].cpu().data
+            idx_of_j = torch.squeeze(torch.nonzero(mask_i)).numpy()
             for j in idx_of_j:
-		        if j != i:
+                if j != i:
                     # Compute local loss
                     dist_ij = dist[i][j]
                     beta = (float(1)/num_class)*(dist_ij/dist_i_sum)
@@ -55,7 +55,8 @@ class TripletLoss(nn.Module):
                     loss += (loss_ij + loss_global)
 		            # loss += loss_ij
 
-	    dist_ap = torch.cat(dist_ap)
+	    
+        dist_ap = torch.cat(dist_ap)
         dist_an = torch.cat(dist_an)
         y = dist_an.data.new()
         y.resize_as_(dist_an.data)

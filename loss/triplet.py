@@ -10,7 +10,7 @@ class TripletLoss(nn.Module):
         super(TripletLoss, self).__init__()
         self.margin = margin
         self.ranking_loss = nn.MarginRankingLoss(margin=margin)
-	    self.softmargin_loss = nn.SoftMarginLoss()
+        self.softmargin_loss = nn.SoftMarginLoss()
 
     def forward(self, inputs, targets):
         n = inputs.size(0)
@@ -34,7 +34,7 @@ class TripletLoss(nn.Module):
         y = Variable(y)
         # loss = self.ranking_loss(dist_an, dist_ap, y)
 	    # Compute soft margin loss
-	    loss = self.softmargin_loss(dist_an-dist_ap-self.margin, y)
-
+        loss = self.softmargin_loss(dist_an-dist_ap-self.margin, y)
         prec = (dist_an.data > dist_ap.data).sum() * 1. / y.size(0)
+        
         return loss, prec

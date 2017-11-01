@@ -24,8 +24,8 @@ from reid.utils.data.sampler import RandomIdentitySampler
 from reid.utils.serialization import load_checkpoint, save_checkpoint
 from utils import Logger, AverageMeter, accuracy, mkdir_p, savefig
 # from loss.triplet import TripletLoss
-# from loss.MSML import TripletLoss
-from loss.SDML import TripletLoss
+# from loss.MSML import MSMLTripletLoss
+from loss.SDML import SDMLTripletLoss
 
 def get_data(name, split_id, data_dir, height, width, batch_size, num_instances,
              workers, combine_trainval):
@@ -178,8 +178,8 @@ def main(args):
     for epoch in range(start_epoch, args.epochs):
         lr = adjust_lr(epoch)
         loss, prec = train_model(train_loader, model, optimizer, criterion, epoch)
-    	top1, top5, top10 = test_model(test_loader, model)
-	    logger.append([lr, loss, prec, top1, top5, top10])
+        top1, top5, top10 = test_model(test_loader, model)
+        logger.append([lr, loss, prec, top1, top5, top10])
         is_best = top1 > best_top1
         best_top1 = max(top1, best_top1)
         save_checkpoint({
@@ -260,17 +260,17 @@ def train_model(train_loader, model, optimizer, criterion, epoch):
 
     for batch_idx, inputs in enumerate(train_loader):
 
-	    imgs, _, pids, _ = inputs
-	    inputs = [Variable(imgs)]
-	    targets = Variable(pids)
-	    if args.cuda:
-	        targets = targets.cuda()
+        imgs, _, pids, _ = inputs
+        inputs = [Variable(imgs)]
+        targets = Variable(pids)
+        if args.cuda:
+            targets = targets.cuda()
 
-	    outputs = model(*inputs)
+        outputs = model(*inputs)
         loss, prec1 = criterion(outputs, targets)
 
-	    losses.update(loss.data[0], targets.size(0))
-	    precisions.update(prec1, targets.size(0))
+        losses.update(loss.data[0], targets.size(0))
+        precisions.update(prec1, targets.size(0))
 
         # compute gradient and do SGD step
         optimizer.zero_grad()
@@ -281,7 +281,7 @@ def train_model(train_loader, model, optimizer, criterion, epoch):
             print('Train Epoch: {} [{}/{} ({:.0f}%)]\tLoss: {:.4f}'.format(
                 epoch, (batch_idx+1), len(train_loader),
                 100. * (batch_idx+1) / len(train_loader), loss.data[0]))
-	        print('Loss {:.3f} ({:.3f})\t'
+            print('Loss {:.3f} ({:.3f})\t'
                   'Prec {:.2%} ({:.2%})\t'
                   .format(losses.val, losses.avg,
                    precisions.val, precisions.avg))

@@ -4,9 +4,9 @@ import torch
 from torch import nn
 from torch.autograd import Variable
 
-class TripletLoss(nn.Module):
+class MSMLTripletLoss(nn.Module):
     def __init__(self, margin=0):
-        super(TripletLoss, self).__init__()
+        super(MSMLTripletLoss, self).__init__()
         self.margin = margin
         self.ranking_loss = nn.MarginRankingLoss(margin=margin)
 
@@ -27,15 +27,15 @@ class TripletLoss(nn.Module):
         dist_ap = torch.cat(dist_ap)
         dist_an = torch.cat(dist_an)
 	    # For each batch, find the hardest positive and hardest negative
-	    dist_ap_max = torch.max(dist_ap)
-	    dist_an_min = torch.min(dist_an)
+        dist_ap_max = torch.max(dist_ap)
+        dist_an_min = torch.min(dist_an)
         # Compute ranking hinge loss
         y = dist_ap_max.data.new()
         y.resize_as_(dist_ap_max.data)
         y.fill_(1)
         y = Variable(y)
         loss = self.ranking_loss(dist_an_min, dist_ap_max, y)
-	    # loss = torch.log(1+torch.exp(dist_ap_min + self.margin - dist_an_max))
+        # loss = torch.log(1+torch.exp(dist_ap_min + self.margin - dist_an_max))
         prec = (dist_an.data > dist_ap.data).sum() * 1. / dist_an.size(0)
         return loss, prec
 

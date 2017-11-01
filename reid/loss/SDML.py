@@ -33,15 +33,15 @@ class SDMLTripletLoss(nn.Module):
         dist_mean = sum_dist_positive_all/num_positive_pairs
 	
 
-	    dist_ap, dist_an, loss_list = [], [], []
+        dist_ap, dist_an, loss_list = [], [], []
         for i in range(n):
-	        dist_ap.append(dist[i][mask[i]].max())
+            dist_ap.append(dist[i][mask[i]].max())
             dist_an.append(dist[i][mask[i] == 0].min())
-	        dist_i_sum = torch.sum(dist[i][mask[i]])
-	        mask_i = mask[i].cpu().data
-	        idx_of_j = torch.squeeze(torch.nonzero(mask_i)).numpy()
+            dist_i_sum = torch.sum(dist[i][mask[i]])
+            mask_i = mask[i].cpu().data
+            idx_of_j = torch.squeeze(torch.nonzero(mask_i)).numpy()
             for j in idx_of_j:
-		        if j != i:
+                if j != i:
                     # Compute local loss
                     dist_ij = dist[i][j]
                     beta = (float(1)/num_class)*(dist_ij/dist_i_sum)
